@@ -2,15 +2,29 @@
 
 import sys
 
+# ADD HLT instruction definition by name
+HLT = 0b00000001
+LDI = 0b10000010
+PRN = 0b01000111
+
 class CPU:
     """Main CPU class."""
 
     def __init__(self):
         """Construct a new CPU."""
+        # Add properties to hold 256 byes of memory and 8 general purpose registers. See step 1 and guided project.
+        # Add property for PC and any other internal registers needed. See internal registers from Spec.
+        # See rest of this class to find variables needed.
+        self.reg = [0] * 8
+        self.pc = 0
+        self.mar = 0
+        self.mdr = 0
+        self.ram = [] * 256
         pass
 
     def load(self):
         """Load a program into memory."""
+        
 
         address = 0
 
@@ -18,18 +32,31 @@ class CPU:
 
         program = [
             # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
+            0b10000010, # LDI R0,8  Tells that we are going to set the value of a register to an int
+            0b00000000, # Indicates R0
+            0b00001000, # Indicates the number 8 in binary
+            0b01000111, # PRN R0  Tells that we are going to print the value of an int stored in a register
+            0b00000000, # Indicates R0
+            0b00000001, # HLT  HALTS
         ]
 
         for instruction in program:
             self.ram[address] = instruction
             address += 1
 
+
+    def ram_read(self, address):
+        # Add method. See Step 2
+        # self.mar
+        self.mar = address
+        return self.ram[self.mar]
+
+    def ram_write(self, value, address):
+        # Add method. See Step 2
+        # self.mdr
+        self.mar = address
+        self.mdr = value
+        self.ram[self.mar] = self.mdr
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -62,4 +89,26 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
+        # Implement steps 4, 5, and 6.
+        IR = self.ram[self.pc]
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+        halted = False
+
+        while not halted:
+            if IR == LDI:
+                self.ram_write(operand_b, operand_a)
+                # self.reg[operand_a] = operand_b
+                self.pc += 3
+
+            elif IR == PRN:
+                print(operand_a)
+                self.pc += 2
+
+            elif IR == HLT:
+                halted = True
+
+            else:
+                print(f"unknown instruction {IR} at address {self.pc}")
+                sys.exit(1)
