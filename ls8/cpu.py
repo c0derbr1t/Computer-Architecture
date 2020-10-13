@@ -6,6 +6,7 @@ import sys
 HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
+MUL = 0b10100010
 
 class CPU:
     """Main CPU class."""
@@ -19,30 +20,59 @@ class CPU:
         self.pc = 0
         self.mar = 0
         self.mdr = 0
-        self.ram = [] * 256
-        pass
+        self.ram = [0] * 256
 
     def load(self):
         """Load a program into memory."""
-        
+        # print("\nARGV:")
+        # print(sys.argv[1])
+        # print("\n")
 
         address = 0
 
+        if len(sys.argv) != 2:
+            print("Usage: ls8.py examples/file")
+            sys.exit(1)
+
+        try:
+            with open(sys.argv[1]) as f:
+                for line in f:
+                    line = line.strip()
+                    # print(line)
+                    if line == "" or line[0] == "#":
+                        continue
+
+                    try:
+                        str_value = line.split("#")[0]
+                        value = int(str_value, 2)
+                        
+
+                    except ValueError:
+                        print(f"Invalid Number: {str_value}")
+                        sys.exit(1)
+
+                    self.ram[address] = value
+                    address += 1
+
+        except FileNotFoundError:
+            print(f"FileNotFound: {sys.argv[1]}")
+            sys.exit(2)
+
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8  Tells that we are going to set the value of a register to an int
-            0b00000000, # Indicates R0
-            0b00001000, # Indicates the number 8 in binary
-            0b01000111, # PRN R0  Tells that we are going to print the value of an int stored in a register
-            0b00000000, # Indicates R0
-            0b00000001, # HLT  HALTS
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8  Tells that we are going to set the value of a register to an int
+        #     0b00000000, # Indicates R0
+        #     0b00001000, # Indicates the number 8 in binary
+        #     0b01000111, # PRN R0  Tells that we are going to print the value of an int stored in a register
+        #     0b00000000, # Indicates R0
+        #     0b00000001, # HLT  HALTS
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
 
     def ram_read(self, address):
@@ -57,6 +87,9 @@ class CPU:
         self.mar = address
         self.mdr = value
         self.ram[self.mar] = self.mdr
+
+    def reg_write(self, value, address):
+        self.reg[address] = value
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -87,26 +120,42 @@ class CPU:
 
         print()
 
+    def print_reg(self):
+        for i, item in enumerate(self.reg):
+            print(f"R{i}: {item}")
+        print("\n")
+
     def run(self):
         """Run the CPU."""
         # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
         # Implement steps 4, 5, and 6.
-        IR = self.ram[self.pc]
-        operand_a = self.ram_read(self.pc + 1)
-        operand_b = self.ram_read(self.pc + 2)
         halted = False
+        # print("run start")
 
         while not halted:
+            IR = self.ram[self.pc]
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
             if IR == LDI:
-                self.ram_write(operand_b, operand_a)
+                # print("run LDI")
+                self.reg_write(operand_b, operand_a)
                 # self.reg[operand_a] = operand_b
                 self.pc += 3
 
             elif IR == PRN:
-                print(operand_a)
+                # print("run PRN")
+                print(self.reg[operand_a])
                 self.pc += 2
 
+            elif IR == MUL:
+                # print("run MUL")
+                val = self.reg[operand_a] * self.reg[operand_b]
+                self.reg_write(val, operand_a)
+                self.pc += 3
+
             elif IR == HLT:
+                # print("run HLT")
                 halted = True
 
             else:
