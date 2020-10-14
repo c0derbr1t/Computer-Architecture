@@ -21,6 +21,12 @@ class CPU:
         self.mar = 0
         self.mdr = 0
         self.ram = [0] * 256
+        self.branchtable = {}
+        self.branchtable[HLT] = self.handle_hlt
+        self.branchtable[LDI] = self.handle_ldi
+        self.branchtable[PRN] = self.handle_prn
+        self.branchtable[MUL] = self.handle_mul
+
 
     def load(self):
         """Load a program into memory."""
@@ -125,6 +131,28 @@ class CPU:
             print(f"R{i}: {item}")
         print("\n")
 
+    def handle_hlt(self, a=None, b=None):
+        # print("run HLT")
+        # halted = True
+        sys.exit(0)
+
+    def handle_ldi(self, a, b):
+        # print("run LDI")
+        self.reg_write(b, a)
+        # self.reg[operand_a] = operand_b
+        self.pc += 3
+
+    def handle_prn(self, a, b=None):
+        # print("run PRN")
+        print(self.reg[a])
+        self.pc += 2
+
+    def handle_mul(self, a, b):
+        # print("run MUL")
+        val = self.reg[a] * self.reg[b]
+        self.reg_write(val, a)
+        self.pc += 3
+
     def run(self):
         """Run the CPU."""
         # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
@@ -137,27 +165,10 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            if IR == LDI:
-                # print("run LDI")
-                self.reg_write(operand_b, operand_a)
-                # self.reg[operand_a] = operand_b
-                self.pc += 3
-
-            elif IR == PRN:
-                # print("run PRN")
-                print(self.reg[operand_a])
-                self.pc += 2
-
-            elif IR == MUL:
-                # print("run MUL")
-                val = self.reg[operand_a] * self.reg[operand_b]
-                self.reg_write(val, operand_a)
-                self.pc += 3
-
-            elif IR == HLT:
-                # print("run HLT")
-                halted = True
+            if IR in self.branchtable:
+                self.branchtable[IR](operand_a, operand_b)
 
             else:
+                #unknown instruction
                 print(f"unknown instruction {IR} at address {self.pc}")
                 sys.exit(1)
