@@ -133,8 +133,8 @@ class CPU:
 
     def handle_hlt(self, a=None, b=None):
         # print("run HLT")
-        # halted = True
-        sys.exit(0)
+        self.halted = True
+        # sys.exit(0)
 
     def handle_ldi(self, a, b):
         # print("run LDI")
@@ -157,10 +157,10 @@ class CPU:
         """Run the CPU."""
         # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
         # Implement steps 4, 5, and 6.
-        halted = False
+        self.halted = False
         # print("run start")
 
-        while not halted:
+        while not self.halted:
             IR = self.ram[self.pc]
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
