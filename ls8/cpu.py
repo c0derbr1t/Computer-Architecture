@@ -7,6 +7,9 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+PUSH = 0b01000111
+POP = 0b01000110
+SP = 7
 
 class CPU:
     """Main CPU class."""
@@ -17,6 +20,7 @@ class CPU:
         # Add property for PC and any other internal registers needed. See internal registers from Spec.
         # See rest of this class to find variables needed.
         self.reg = [0] * 8
+        self.reg[SP] = 0xf4
         self.pc = 0
         self.mar = 0
         self.mdr = 0
@@ -26,6 +30,8 @@ class CPU:
         self.branchtable[LDI] = self.handle_ldi
         self.branchtable[PRN] = self.handle_prn
         self.branchtable[MUL] = self.handle_mul
+        self.branchtable[PUSH] = self.handle_push
+        self.branchtable[POP] = self.handle_pop
 
 
     def load(self):
@@ -152,6 +158,34 @@ class CPU:
         val = self.reg[a] * self.reg[b]
         self.reg_write(val, a)
         self.pc += 3
+
+    def handle_push(self, a, b=None):
+        # decrement SP
+        self.reg[SP] -= 1
+
+        # grab value out of the reg
+        reg_num = self.ram[a]
+        value = self.reg[reg_num]
+
+        # copy onto stack 
+        top_of_stack = self.reg[SP]
+        self.ram[top_of_stack] = value
+        self.pc += 2
+
+        print(self.ram[0xf0:0xf4])
+
+    def handle_pop(self, a, b=None):
+        # get value from top of stack
+        top_of_stack = self.reg[SP]
+        value = self.ram[top_of_stack]
+
+        # store in reg
+        reg_num = self.ram[a]
+        self.reg[reg_num] = value
+
+        # Increment SP
+        self.reg[SP] += 1
+        self.pc += 2
 
     def run(self):
         """Run the CPU."""
