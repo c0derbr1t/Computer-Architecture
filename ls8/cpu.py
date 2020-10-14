@@ -7,7 +7,7 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
-PUSH = 0b01000111
+PUSH = 0b01000101
 POP = 0b01000110
 SP = 7
 
@@ -138,49 +138,58 @@ class CPU:
         print("\n")
 
     def handle_hlt(self, a=None, b=None):
+        # x = "HLT"
         # print("run HLT")
         # halted = True
         sys.exit(0)
 
     def handle_ldi(self, a, b):
+        # x = "LDI"
         # print("run LDI")
         self.reg_write(b, a)
         # self.reg[operand_a] = operand_b
         self.pc += 3
 
     def handle_prn(self, a, b=None):
+        # x = "PRN"
         # print("run PRN")
         print(self.reg[a])
         self.pc += 2
 
     def handle_mul(self, a, b):
+        # x = "MUL"
         # print("run MUL")
         val = self.reg[a] * self.reg[b]
         self.reg_write(val, a)
         self.pc += 3
 
     def handle_push(self, a, b=None):
+        # x = "PUSH"
+        # print("run PUSH")
         # decrement SP
         self.reg[SP] -= 1
 
         # grab value out of the reg
-        reg_num = self.ram[a]
+        reg_num = self.reg[a]
         value = self.reg[reg_num]
+        # print(value)
 
         # copy onto stack 
         top_of_stack = self.reg[SP]
         self.ram[top_of_stack] = value
         self.pc += 2
 
-        print(self.ram[0xf0:0xf4])
+        # print(self.ram[0xf0:0xf4])
 
     def handle_pop(self, a, b=None):
+        # x = "POP"
+        # print("run POP")
         # get value from top of stack
         top_of_stack = self.reg[SP]
         value = self.ram[top_of_stack]
 
         # store in reg
-        reg_num = self.ram[a]
+        reg_num = self.reg[a]
         self.reg[reg_num] = value
 
         # Increment SP
@@ -188,13 +197,17 @@ class CPU:
         self.pc += 2
 
     def run(self):
+        # x = "run()"
         """Run the CPU."""
         # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
         # Implement steps 4, 5, and 6.
         halted = False
         # print("run start")
+        # num = 1
 
         while not halted:
+            # print(num)
+            # num += 1
             IR = self.ram[self.pc]
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
