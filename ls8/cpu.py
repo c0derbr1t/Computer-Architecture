@@ -140,8 +140,8 @@ class CPU:
     def handle_hlt(self, a=None, b=None):
         # x = "HLT"
         # print("run HLT")
-        # halted = True
-        sys.exit(0)
+        self.halted = True
+        # sys.exit(0)
 
     def handle_ldi(self, a, b):
         # x = "LDI"
@@ -169,10 +169,9 @@ class CPU:
         # decrement SP
         self.reg[SP] -= 1
 
-        # grab value out of the reg
-        reg_num = self.reg[a]
-        value = self.reg[reg_num]
-        # print(value)
+        # # grab value out of the reg
+        value = self.reg[a]
+        # value = self.reg[reg_num]
 
         # copy onto stack 
         top_of_stack = self.reg[SP]
@@ -189,8 +188,8 @@ class CPU:
         value = self.ram[top_of_stack]
 
         # store in reg
-        reg_num = self.reg[a]
-        self.reg[reg_num] = value
+        # reg_num = self.reg[a]
+        self.reg[a] = value
 
         # Increment SP
         self.reg[SP] += 1
@@ -201,11 +200,11 @@ class CPU:
         """Run the CPU."""
         # Set local variable IR. Implement core of this method. See Step 3 amd Specs.
         # Implement steps 4, 5, and 6.
-        halted = False
+        self.halted = False
         # print("run start")
         # num = 1
 
-        while not halted:
+        while not self.halted:
             # print(num)
             # num += 1
             IR = self.ram[self.pc]
